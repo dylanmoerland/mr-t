@@ -21,10 +21,6 @@ class MrT {
     public update() {
         if (this.agent) {
             this.agent.update();
-
-            if (!this.isAlive()) {
-                runner.stop();
-            }
         }
     }
 

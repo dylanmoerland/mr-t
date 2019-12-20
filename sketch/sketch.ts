@@ -27,7 +27,7 @@ async function draw() {
         target.update();
         target.show();
 
-        if (target instanceof Tyrannosaurus && !target.isAlive()) {
+        if ((target instanceof Tyrannosaurus || target instanceof MrT) && !target.isAlive()) {
             runner.stop();
         } 
     } else {

@@ -130,9 +130,6 @@ var MrT = (function () {
     MrT.prototype.update = function () {
         if (this.agent) {
             this.agent.update();
-            if (!this.isAlive()) {
-                runner.stop();
-            }
         }
     };
     MrT.prototype.show = function () {
@@ -288,7 +285,7 @@ function draw() {
                 runner.update();
                 target.update();
                 target.show();
-                if (target instanceof Tyrannosaurus && !target.isAlive()) {
+                if ((target instanceof Tyrannosaurus || target instanceof MrT) && !target.isAlive()) {
                     runner.stop();
                 }
             }
