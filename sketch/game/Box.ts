@@ -52,7 +52,7 @@ class Box {
     }
 
     private setGap(speed: number, minimumGap: number) {
-        const minGap = Math.round((width * speed / 16) + minimumGap);
+        const minGap = Math.round((width * speed / 24) + minimumGap);
         const maxGap = Math.round(minGap * 1.5);
     
         this.gap = Math.floor(Math.random() * (maxGap - minGap + 1)) + minGap;

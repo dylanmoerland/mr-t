@@ -70,6 +70,78 @@ var Agent = (function () {
     };
     return Agent;
 }());
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+var MrT = (function () {
+    function MrT() {
+        this.load();
+    }
+    MrT.prototype.load = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var model;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4, tf.loadLayersModel('../mr-t.json')];
+                    case 1:
+                        model = _a.sent();
+                        this.agent = new Agent(new NeuralNetwork(model, new NeuralNetworkLayer(5, 'sigmoid', [5]), new NeuralNetworkLayer(3, 'sigmoid')));
+                        return [2];
+                }
+            });
+        });
+    };
+    MrT.prototype.isAlive = function () {
+        return this.agent.isAlive();
+    };
+    MrT.prototype.update = function () {
+        if (this.agent) {
+            this.agent.update();
+            if (!this.isAlive()) {
+                runner.stop();
+            }
+        }
+    };
+    MrT.prototype.show = function () {
+        if (this.agent) {
+            this.agent.show();
+        }
+    };
+    return MrT;
+}());
 var NeuralNetwork = (function () {
     function NeuralNetwork(model) {
         var layers = [];
@@ -190,57 +262,20 @@ var Population = (function () {
     };
     return Population;
 }());
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
 var runner;
-var tyrannosaurus;
-var population;
-var isRunning;
-var mrT = null;
-var playerEnabled;
+var target;
+var placeholder;
 var speed;
 function setup() {
     createCanvas(1200, 350);
     runner = new Runner();
-    tyrannosaurus = new Tyrannosaurus(runner);
-    population = new Population(6);
-    mrT = null;
-    isRunning = false;
-    playerEnabled = false;
+    placeholder = new Sprite('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAv0AAABeAgMAAADNv0PuAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAxQTFRFAAAA////U1NT9/f3LGVtlQAAAAR0Uk5TAP///7MtQIgAAAJaSURBVHic7dpNUsQgEAXg3mTj6bLpTe7HhktqgPDfIbECcQofC8t6jt39aZExRKK4OCx6IR2wAADg2WLWx+IXUiKfAgDAxwC0FjqNSimmAMRG/Iuh5NeepCwBfArAeMCmJIBPAbga9XkKwF8DXtvEANxP8U4MAAAAAPCZgPL8o1cKAAAfC/C98tOPUWkNeDg+AAA8nt/VXTjZgeNSCvOmwzcP3vcKKwCvA5bwTGQVANkTk0kAzJv2jWhg6gFf2QZm92XOpg6fbsoQlmRqAIYDwrfpffgKkFyYeQqATqPj7WZUSm7omB6A/MUqB9iPIdEAvAEI07rPC0BWdAZAGnFoPyQlO3McPwLKpbYakwwOAABdAelXmIWS3VLKU3KLJYGHsCgAAIBhAJK2VbdUBrQEav/T+lwAAADPAUUn32hUmgt82BAocy9zKpgPEPqMSjNACP83IOsUG41KU0EMRYGyN/AryQJ3ew8AAB0ASSf52VzfNLmdSVcmCHcxyh3s5oLw0vAMBQAAngGoCoamXkD5WhKBCufr/tlGKojn66NH/Z8Ae55+BtivrJpnBJjv5ap9I+Wwv2LKNyu4060asPlz3E3VD1Zj16oaAH0ACx+Addl0JUi61uUmAJhf0L4zNN9PuXj8fAhuVXDD1wBzoGvuX04A5gSC658SAJ0Adm4HKGuHSlRcPacCMEmjyul3XcDWvlvBzV6/kZkL6EpnAH/zAsBwgLjE96+pAHazFZ0aaaPMdYVjE9f/7rfYTXyvNAAA9AXwcZdwN22Uua5wusQL6GXXi1EBAKDd9QdkEiKKVx42AAAAAABJRU5ErkJggg==', {
+        frames: [88, 0],
+        frameRate: 12,
+        frameWidth: 88,
+        frameHeight: 94,
+    });
+    target = null;
     speed = 1.5;
 }
 function draw() {
@@ -248,66 +283,46 @@ function draw() {
         return __generator(this, function (_a) {
             noStroke();
             background(255);
-            runner.update();
             runner.show();
-            if (!isRunning || playerEnabled) {
-                tyrannosaurus.update();
-                tyrannosaurus.show();
-                if (!tyrannosaurus.isAlive()) {
+            if (target) {
+                runner.update();
+                target.update();
+                target.show();
+                if (target instanceof Tyrannosaurus && !target.isAlive()) {
                     runner.stop();
                 }
             }
-            ;
-            if (mrT) {
-                mrT.update();
-                mrT.show();
-            }
-            if (isRunning && !playerEnabled && !mrT) {
-                population.update();
-                population.show();
+            else {
+                placeholder.update(50, height - 94);
+                placeholder.show();
             }
             return [2];
         });
     });
 }
-function loadMrT() {
-    return __awaiter(this, void 0, void 0, function () {
-        var model;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4, tf.loadLayersModel('../mr-t.json')];
-                case 1:
-                    model = _a.sent();
-                    mrT = new Agent(new NeuralNetwork(model, new NeuralNetworkLayer(5, 'sigmoid', [5]), new NeuralNetworkLayer(3, 'sigmoid')));
-                    isRunning = true;
-                    runner.start();
-                    return [2];
-            }
-        });
-    });
-}
 function keyPressed() {
-    if (!isRunning) {
+    if (!target) {
         if (keyCode === 38) {
-            isRunning = true;
-            playerEnabled = true;
+            target = new Tyrannosaurus(runner);
+            target.run();
             runner.start();
         }
         else if (keyCode === 67) {
-            isRunning = true;
+            target = new Population(8);
             runner.start();
         }
         else if (keyCode === 76) {
-            loadMrT();
+            target = new MrT();
+            runner.start();
         }
     }
-    else {
+    else if (target instanceof Tyrannosaurus) {
         switch (keyCode) {
             case 38:
-                this.tyrannosaurus.jump();
+                target.jump();
                 break;
             case 40:
-                this.tyrannosaurus.duck();
+                target.duck();
                 break;
         }
     }
@@ -316,10 +331,12 @@ function keyPressed() {
     }
 }
 function keyReleased() {
-    switch (keyCode) {
-        case 40:
-            this.tyrannosaurus.run();
-            break;
+    if (target instanceof Tyrannosaurus) {
+        switch (keyCode) {
+            case 40:
+                target.run();
+                break;
+        }
     }
 }
 var Box = (function () {
@@ -362,7 +379,7 @@ var Box = (function () {
         return false;
     };
     Box.prototype.setGap = function (speed, minimumGap) {
-        var minGap = Math.round((width * speed / 16) + minimumGap);
+        var minGap = Math.round((width * speed / 24) + minimumGap);
         var maxGap = Math.round(minGap * 1.5);
         this.gap = Math.floor(Math.random() * (maxGap - minGap + 1)) + minGap;
     };
