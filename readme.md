@@ -24,8 +24,11 @@ I wanted to create a fun game to showcase the progress of unsupervised learning,
 
 ## Quick start
 `$ git clone https://github.com/dylanmoerland/mr-t.git`
+
 `$ cd mr-t`
+
 `$ npm install`
+
 `$ npm start`
 
 ## License
