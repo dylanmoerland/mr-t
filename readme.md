@@ -1,5 +1,5 @@
 
-# Mr. T, a self thaught beast.
+# Mr. T, a self-thaught beast.
 This is a recreation of the chrome dinosaur game done with p5.js and TensorFlow.js to teach an AI to play the game through unsupervised learning.
 
 ![](learning.gif)
