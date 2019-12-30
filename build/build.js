@@ -36,30 +36,37 @@ var Agent = (function () {
     Agent.prototype.getScore = function () {
         return this.tyrannosaurus.getScore();
     };
-    Agent.prototype.update = function () {
-        if (this.tyrannosaurus.isAlive()) {
-            this.makeDirectionDecision();
-            this.tyrannosaurus.update();
-        }
-    };
-    Agent.prototype.makeDirectionDecision = function () {
+    Agent.prototype.makeDecission = function () {
         var tyrannosaurusDimensions = this.tyrannosaurus.getDimensions();
         var boxPositions = runner.getObstacles().map(function (box) { return box.getDimensions(); });
         if (boxPositions.length) {
-            var outputs = this.brain.predict([tyrannosaurusDimensions.x, tyrannosaurusDimensions.height, boxPositions[0].x, boxPositions[0].y, boxPositions[0].height]);
-            var index = outputs.indexOf(Math.max.apply(Math, __spread(outputs)));
-            switch (index) {
+            var outputs = this.brain.predict([
+                tyrannosaurusDimensions.x,
+                tyrannosaurusDimensions.height,
+                boxPositions[0].x,
+                boxPositions[0].y,
+                boxPositions[0].height,
+            ]);
+            var action = outputs.indexOf(Math.max.apply(Math, __spread(outputs)));
+            switch (action) {
                 case 0:
                     this.tyrannosaurus.run();
                     break;
                 case 1:
                     this.tyrannosaurus.jump();
+                    break;
                 case 2:
                     this.tyrannosaurus.duck();
                     break;
                 default:
                     break;
             }
+        }
+    };
+    Agent.prototype.update = function () {
+        if (this.tyrannosaurus.isAlive()) {
+            this.makeDecission();
+            this.tyrannosaurus.update();
         }
     };
     Agent.prototype.show = function () {
@@ -235,15 +242,18 @@ var Population = (function () {
         return this.agents.some(function (agent) { return agent.isAlive(); });
     };
     Population.prototype.nextGeneration = function () {
-        runner = new Runner();
+        runner = new Runner(runner.getSpeed());
         var agents = __spread(this.agents);
         var bestAgents = agents.sort(function (a, b) { return b.getScore() - a.getScore(); }).slice(0, 2);
-        this.agents = new Array(this.size).fill(0).map(function () {
-            return Agent.FROM_PARENTS(bestAgents[0], bestAgents[1]);
-        });
+        this.agents = new Array(this.size)
+            .fill(0)
+            .map(function () { return Agent.FROM_PARENTS(bestAgents[0], bestAgents[1]); });
         agents.forEach(function (agent) { return agent.dispose(); });
         this.generation++;
         runner.start();
+    };
+    Population.prototype.getGeneration = function () {
+        return this.generation;
     };
     Population.prototype.dispose = function () {
         this.agents.forEach(function (agent) { return agent.dispose(); });
@@ -262,10 +272,9 @@ var Population = (function () {
 var runner;
 var target;
 var placeholder;
-var speed;
 function setup() {
     createCanvas(1200, 350);
-    runner = new Runner();
+    runner = new Runner(1.5);
     placeholder = new Sprite('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAv0AAABeAgMAAADNv0PuAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAxQTFRFAAAA////U1NT9/f3LGVtlQAAAAR0Uk5TAP///7MtQIgAAAJaSURBVHic7dpNUsQgEAXg3mTj6bLpTe7HhktqgPDfIbECcQofC8t6jt39aZExRKK4OCx6IR2wAADg2WLWx+IXUiKfAgDAxwC0FjqNSimmAMRG/Iuh5NeepCwBfArAeMCmJIBPAbga9XkKwF8DXtvEANxP8U4MAAAAAPCZgPL8o1cKAAAfC/C98tOPUWkNeDg+AAA8nt/VXTjZgeNSCvOmwzcP3vcKKwCvA5bwTGQVANkTk0kAzJv2jWhg6gFf2QZm92XOpg6fbsoQlmRqAIYDwrfpffgKkFyYeQqATqPj7WZUSm7omB6A/MUqB9iPIdEAvAEI07rPC0BWdAZAGnFoPyQlO3McPwLKpbYakwwOAABdAelXmIWS3VLKU3KLJYGHsCgAAIBhAJK2VbdUBrQEav/T+lwAAADPAUUn32hUmgt82BAocy9zKpgPEPqMSjNACP83IOsUG41KU0EMRYGyN/AryQJ3ew8AAB0ASSf52VzfNLmdSVcmCHcxyh3s5oLw0vAMBQAAngGoCoamXkD5WhKBCufr/tlGKojn66NH/Z8Ae55+BtivrJpnBJjv5ap9I+Wwv2LKNyu4060asPlz3E3VD1Zj16oaAH0ACx+Addl0JUi61uUmAJhf0L4zNN9PuXj8fAhuVXDD1wBzoGvuX04A5gSC658SAJ0Adm4HKGuHSlRcPacCMEmjyul3XcDWvlvBzV6/kZkL6EpnAH/zAsBwgLjE96+pAHazFZ0aaaPMdYVjE9f/7rfYTXyvNAAA9AXwcZdwN22Uua5wusQL6GXXi1EBAKDd9QdkEiKKVx42AAAAAABJRU5ErkJggg==', {
         frames: [88, 0],
         frameRate: 12,
@@ -273,7 +282,6 @@ function setup() {
         frameHeight: 94,
     });
     target = null;
-    speed = 1.5;
 }
 function draw() {
     return __awaiter(this, void 0, void 0, function () {
@@ -299,18 +307,22 @@ function draw() {
 }
 function keyPressed() {
     if (!target) {
-        if (keyCode === 38) {
-            target = new Tyrannosaurus(runner);
-            target.run();
-            runner.start();
-        }
-        else if (keyCode === 67) {
-            target = new Population(8);
-            runner.start();
-        }
-        else if (keyCode === 76) {
-            target = new MrT();
-            runner.start();
+        switch (keyCode) {
+            case 38:
+                target = new Tyrannosaurus(runner);
+                target.run();
+                runner.start();
+                break;
+            case 67:
+                target = new Population(8);
+                runner.start();
+                break;
+            case 76:
+                target = new MrT();
+                runner.start();
+                break;
+            default:
+                break;
         }
     }
     else if (target instanceof Tyrannosaurus) {
@@ -321,6 +333,8 @@ function keyPressed() {
             case 40:
                 target.duck();
                 break;
+            default:
+                break;
         }
     }
     if (keyCode === 82) {
@@ -328,21 +342,17 @@ function keyPressed() {
     }
 }
 function keyReleased() {
-    if (target instanceof Tyrannosaurus) {
-        switch (keyCode) {
-            case 40:
-                target.run();
-                break;
-        }
+    if (target instanceof Tyrannosaurus && keyCode === 40) {
+        target.run();
     }
 }
 var Box = (function () {
-    function Box(sprite, minimumGap, speed) {
-        this.cleared = false;
+    function Box(runner, sprite, minimumGap, speed) {
         this.speed = speed;
         this.sprite = sprite;
-        this.setGap(speed, minimumGap);
         this.x = width;
+        this.runner = runner;
+        this.setGap(speed, minimumGap);
     }
     Box.prototype.getGap = function () {
         return this.gap;
@@ -367,16 +377,16 @@ var Box = (function () {
     Box.prototype.checkCollision = function (tyrannosaurus) {
         var rect1 = tyrannosaurus.getDimensions();
         var rect2 = this.getDimensions();
-        if (rect1.x < rect2.x + rect2.width &&
-            rect1.x + rect1.width > rect2.x &&
-            rect1.y < rect2.y + rect2.height &&
-            rect1.y + rect1.height > rect2.y) {
+        if (rect1.x < rect2.x + rect2.width
+            && rect1.x + rect1.width > rect2.x
+            && rect1.y < rect2.y + rect2.height
+            && rect1.y + rect1.height > rect2.y) {
             return true;
         }
         return false;
     };
     Box.prototype.setGap = function (speed, minimumGap) {
-        var minGap = Math.round((width * speed / 24) + minimumGap);
+        var minGap = Math.round(((width * speed) / 24) + minimumGap);
         var maxGap = Math.round(minGap * 1.5);
         this.gap = Math.floor(Math.random() * (maxGap - minGap + 1)) + minGap;
     };
@@ -387,13 +397,7 @@ var Box = (function () {
         };
     };
     Box.prototype.move = function () {
-        this.x -= this.speed * speed;
-    };
-    Box.prototype.clear = function () {
-        this.cleared = true;
-    };
-    Box.prototype.isCleared = function () {
-        return this.cleared;
+        this.x -= this.speed * this.runner.getSpeed();
     };
     Box.prototype.update = function () {
         this.move();
@@ -419,8 +423,8 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var Cactus = (function (_super) {
     __extends(Cactus, _super);
-    function Cactus() {
-        var _this = _super.call(this, new Sprite('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfsAAABkAgMAAAD8onFjAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAxQTFRFAAAA//////f3U1NTwLTgpAAAAAR0Uk5TAP///7MtQIgAAAOWSURBVHic7ZrhkasgEICRGpKxBUeaMK+Gy6SamzBWc2N6iE2YHpy8GnI8YBdcjRrP+xF4CT8yuEv4dhZYF5Cx55dkX0Bl+7FUwBivKul7yKsv9lDRK1TxbH6qGqAcb8VCAWNCqdYja/XtmZMKWnqKJ/OTo4JeUwWYxwLbQdeDRnrmpCKnI0EVwfM3KEiKX/B5TUciOP4GcUnBtru+IPncAT9tsMUaPp2W4fF3nwXg0iY5XvqCVF0sXy++gxVMY3gl4+QfzLzSuIth3IYCyr9ACBrHCNUu4OuVGCF/85hvomo5x89g6L5lQPwN8m10ofxOABNy92s+P0ushcOH6HKAhdbjd4KLFVx+zRf2ISx+Ouzd8Ylgks8h1YLectnxe4r/ly9c2DGTq76Wnk8V2rAJvklJYuS714zhSRdNBTyXdwpet+N8m5IEyNdlnu9eM8DDaDrkU4Uc5duQHCH/D8Wcut76fKqIia/D8cvxFfG8eet2OKzir1rLz2Xg/NsOcQ1L9kfKb/wIHVbzy9pUr6dw+Q1kl7DPpANixuOCCZmVqxX8k31UKlT+bV9gdm3OlxIyIFrg+WwLA8JX83ViIoPjg9fBue78QTlvN4zwbWP9+p3jV3P8lomWwUwMhQ/OLqDv7vxlX3gBtPAbsg82x7dlgn81aQu8lFUwfPSp87rjU0FK+Q2b5ruuJ/htt/cMiG/DrUmpzerqnb85AcadBXxeL+Bjo1D4y85f/Ryd5TMxz88MPxNR8hu2gA++neLzs07KyzMu06j4N3sD0/FtmK0AY6Op/jFpZk4VQ75Q11pX2rw6RccnAreAnBN93TShq8sbNuDDxhwtjprfRVOFp04uBElqmBjjO4uj47Ou65YYA+dJ+Nyy3CuMLaN8sDg+vmfixtKUK966YgSSxMoWq3d8PAGNju/cZ++QvcOZ5/cUxjCoDtcfWhwhn1c2zML/MZpSPiiIk8UIf/H9Z3j8ZfePvDPMDkCgfLbdw1cVyR4/s3gs+PH9a34ff4Lhryk/5cP9Uy82vR4flyF7Wb7NXOXr8nVSArpX5fM3/81/89/8/4OfEQyXs4oRPpdsdXkyPzO76+/Sfk/ES5tmi3aoQIxwO5AhX6wfgSfz+blW3s3ir/Le7CnQMK3I+vxOESlfu7mq3HfmvDT1r3sFGmasgls3OH8mimj50D/pgeOMowowzCgyu2WXupH9CrtTRM3vzZ9siYLW4eEfqRohRz5o9gUAAAAASUVORK5CYII=', {
+    function Cactus(runner) {
+        var _this = _super.call(this, runner, new Sprite('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfsAAABkAgMAAAD8onFjAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAxQTFRFAAAA//////f3U1NTwLTgpAAAAAR0Uk5TAP///7MtQIgAAAOWSURBVHic7ZrhkasgEICRGpKxBUeaMK+Gy6SamzBWc2N6iE2YHpy8GnI8YBdcjRrP+xF4CT8yuEv4dhZYF5Cx55dkX0Bl+7FUwBivKul7yKsv9lDRK1TxbH6qGqAcb8VCAWNCqdYja/XtmZMKWnqKJ/OTo4JeUwWYxwLbQdeDRnrmpCKnI0EVwfM3KEiKX/B5TUciOP4GcUnBtru+IPncAT9tsMUaPp2W4fF3nwXg0iY5XvqCVF0sXy++gxVMY3gl4+QfzLzSuIth3IYCyr9ACBrHCNUu4OuVGCF/85hvomo5x89g6L5lQPwN8m10ofxOABNy92s+P0ushcOH6HKAhdbjd4KLFVx+zRf2ISx+Ouzd8Ylgks8h1YLectnxe4r/ly9c2DGTq76Wnk8V2rAJvklJYuS714zhSRdNBTyXdwpet+N8m5IEyNdlnu9eM8DDaDrkU4Uc5duQHCH/D8Wcut76fKqIia/D8cvxFfG8eet2OKzir1rLz2Xg/NsOcQ1L9kfKb/wIHVbzy9pUr6dw+Q1kl7DPpANixuOCCZmVqxX8k31UKlT+bV9gdm3OlxIyIFrg+WwLA8JX83ViIoPjg9fBue78QTlvN4zwbWP9+p3jV3P8lomWwUwMhQ/OLqDv7vxlX3gBtPAbsg82x7dlgn81aQu8lFUwfPSp87rjU0FK+Q2b5ruuJ/htt/cMiG/DrUmpzerqnb85AcadBXxeL+Bjo1D4y85f/Ryd5TMxz88MPxNR8hu2gA++neLzs07KyzMu06j4N3sD0/FtmK0AY6Op/jFpZk4VQ75Q11pX2rw6RccnAreAnBN93TShq8sbNuDDxhwtjprfRVOFp04uBElqmBjjO4uj47Ou65YYA+dJ+Nyy3CuMLaN8sDg+vmfixtKUK966YgSSxMoWq3d8PAGNju/cZ++QvcOZ5/cUxjCoDtcfWhwhn1c2zML/MZpSPiiIk8UIf/H9Z3j8ZfePvDPMDkCgfLbdw1cVyR4/s3gs+PH9a34ff4Lhryk/5cP9Uy82vR4flyF7Wb7NXOXr8nVSArpX5fM3/81/89/8/4OfEQyXs4oRPpdsdXkyPzO76+/Sfk/ES5tmi3aoQIxwO5AhX6wfgSfz+blW3s3ir/Le7CnQMK3I+vxOESlfu7mq3HfmvDT1r3sFGmasgls3OH8mimj50D/pgeOMowowzCgyu2WXupH9CrtTRM3vzZ9siYLW4eEfqRohRz5o9gUAAAAASUVORK5CYII=', {
             frames: [-3],
             frameRate: 6,
             frameHeight: 78,
@@ -447,9 +451,7 @@ var Plain = (function () {
                 if (piece * Plain.PARTIAL_SIZE < _this.image.width - (Plain.PARTIAL_SIZE * 2)) {
                     return piece + 1;
                 }
-                else {
-                    return 0;
-                }
+                return 0;
             });
         }
     };
@@ -470,8 +472,8 @@ var Plain = (function () {
 }());
 var Pterodactyl = (function (_super) {
     __extends(Pterodactyl, _super);
-    function Pterodactyl() {
-        var _this = _super.call(this, new Sprite('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALYAAABPAgMAAAA7A9dGAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAlQTFRFAAAA////U1NTfsgdQQAAAAN0Uk5TAP//RFDWIQAAAKhJREFUeJzdl8sNgCAQRGli+6GJbYJqvNAEVSoCymcx7onRvZC8eSGZGAwYs3LIflYn5zU+mB40/gqdWNyCmF0QfCR90j9iyUfSSayfcNS7EEmPWP4YEQ8hkp7wUeoc2+O8DBxBz7hM4RMMpqeKV1oqk4Qtlq5qvEHqdeDlTjWG1aWj/ISB9KbSHbQYT/fNGSgJd38sSF1xMULT0W+MP9Whng0q/d2DageBX64Eh9WfGgAAAABJRU5ErkJggg==', {
+    function Pterodactyl(runner) {
+        var _this = _super.call(this, runner, new Sprite('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALYAAABPAgMAAAA7A9dGAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAlQTFRFAAAA////U1NTfsgdQQAAAAN0Uk5TAP//RFDWIQAAAKhJREFUeJzdl8sNgCAQRGli+6GJbYJqvNAEVSoCymcx7onRvZC8eSGZGAwYs3LIflYn5zU+mB40/gqdWNyCmF0QfCR90j9iyUfSSayfcNS7EEmPWP4YEQ8hkp7wUeoc2+O8DBxBz7hM4RMMpqeKV1oqk4Qtlq5qvEHqdeDlTjWG1aWj/ISB9KbSHbQYT/fNGSgJd38sSF1xMULT0W+MP9Whng0q/d2DageBX64Eh9WfGgAAAABJRU5ErkJggg==', {
             frames: [-3, 89],
             frameRate: 6,
             frameHeight: 78,
@@ -489,23 +491,20 @@ var Pterodactyl = (function (_super) {
         }
         return _this;
     }
-    Object.defineProperty(Pterodactyl, "MINIMUM_GAB", {
-        get: function () {
-            return 150;
-        },
-        enumerable: true,
-        configurable: true
-    });
     return Pterodactyl;
 }(Box));
 var Runner = (function () {
-    function Runner() {
+    function Runner(speed) {
         this.running = false;
         this.obstacles = [];
         this.plain = new Plain();
         this.sky = new Sky();
         this.score = 0;
+        this.speed = speed;
     }
+    Runner.prototype.getSpeed = function () {
+        return this.speed;
+    };
     Runner.prototype.getObstacles = function () {
         return this.obstacles;
     };
@@ -514,10 +513,10 @@ var Runner = (function () {
     };
     Runner.prototype.addObstacle = function () {
         if (Math.random() < 0.33) {
-            this.obstacles.push(new Pterodactyl());
+            this.obstacles.push(new Pterodactyl(this));
         }
         else {
-            this.obstacles.push(new Cactus());
+            this.obstacles.push(new Cactus(this));
         }
     };
     Runner.prototype.start = function () {
@@ -530,18 +529,17 @@ var Runner = (function () {
         if (this.isRunning()) {
             if (this.obstacles.length) {
                 var lastObstacle = this.obstacles[this.obstacles.length - 1];
-                if (lastObstacle.isVisible() && lastObstacle.getPosition().x + lastObstacle.getWidth() + lastObstacle.getGap() < width) {
+                if (lastObstacle.isVisible()
+                    && lastObstacle.getPosition().x + lastObstacle.getWidth() + lastObstacle.getGap() < width) {
                     this.addObstacle();
                 }
             }
             else {
                 this.addObstacle();
             }
-            this.obstacles = this.obstacles.filter(function (obstacle) { return obstacle.getPosition().x + obstacle.getWidth() > 0; });
+            this.obstacles = this.obstacles
+                .filter(function (obstacle) { return obstacle.getPosition().x + obstacle.getWidth() > 0; });
             this.obstacles.forEach(function (obstacle) {
-                if (obstacle.getPosition().x < 50) {
-                    obstacle.clear();
-                }
                 obstacle.update();
             });
             this.plain.update();
@@ -659,7 +657,7 @@ var Tyrannosaurus = (function () {
         return !this.dead;
     };
     Tyrannosaurus.prototype.jump = function () {
-        if (this.y == height - this.height) {
+        if (this.y === height - this.height) {
             this.isJumping = true;
             this.isDucking = false;
             this.sprite.updateFrameData({
@@ -692,13 +690,14 @@ var Tyrannosaurus = (function () {
         });
     };
     Tyrannosaurus.prototype.getDimensions = function () {
-        if (this.isDucking)
+        if (this.isDucking) {
             return {
                 x: this.x,
                 y: this.y + 40,
                 width: 120,
                 height: 54,
             };
+        }
         return {
             x: this.x,
             y: this.y,

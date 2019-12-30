@@ -1,73 +1,85 @@
 class Runner {
-    private running: boolean = false;
-    private obstacles: Box[] = [];
-    private plain: Plain;
-    private sky: Sky;
-    private score: number;
+  private running: boolean = false;
 
-    constructor() {
-        this.plain = new Plain();
-        this.sky = new Sky();
-        this.score = 0;
+  private obstacles: Box[] = [];
+
+  private plain: Plain;
+
+  private sky: Sky;
+
+  private score: number;
+
+  private speed: number;
+
+  constructor(speed: number) {
+    this.plain = new Plain();
+    this.sky = new Sky();
+    this.score = 0;
+    this.speed = speed;
+  }
+
+  public getSpeed() {
+    return this.speed;
+  }
+
+  public getObstacles() {
+    return this.obstacles;
+  }
+
+  public isRunning() {
+    return this.running;
+  }
+
+  private addObstacle() {
+    if (Math.random() < 0.33) {
+      this.obstacles.push(new Pterodactyl(this));
+    } else {
+      this.obstacles.push(new Cactus(this));
     }
+  }
 
-    public getObstacles() {
-        return this.obstacles;
-    }
+  public start() {
+    this.running = true;
+  }
 
-    public isRunning() {
-        return this.running;
-    }
+  public stop() {
+    this.running = false;
+  }
 
-    private addObstacle() {
-        if (Math.random() < 0.33) {
-            this.obstacles.push(new Pterodactyl());
-        } else {
-            this.obstacles.push(new Cactus());
+  public update() {
+    if (this.isRunning()) {
+      if (this.obstacles.length) {
+        const lastObstacle = this.obstacles[this.obstacles.length - 1];
+        if (lastObstacle.isVisible()
+          && lastObstacle.getPosition().x + lastObstacle.getWidth() + lastObstacle.getGap() < width
+        ) {
+          this.addObstacle();
         }
-    }
+      } else {
+        this.addObstacle();
+      }
 
-    public start() {
-        this.running = true;
-    }
+      this.obstacles = this.obstacles
+        .filter((obstacle: Box) => obstacle.getPosition().x + obstacle.getWidth() > 0);
 
-    public stop() {
-        this.running = false;
-    }
+      this.obstacles.forEach((obstacle: Box) => {
+        obstacle.update();
+      });
 
-    public update() {
-        if (this.isRunning()) {
-            if (this.obstacles.length) {
-                const lastObstacle = this.obstacles[this.obstacles.length - 1];
-                if (lastObstacle.isVisible() && lastObstacle.getPosition().x + lastObstacle.getWidth() + lastObstacle.getGap() < width) {
-                    this.addObstacle();
-                }            
-            } else {
-                this.addObstacle();
-            }
-            
-            this.obstacles = this.obstacles.filter((obstacle: Box) => obstacle.getPosition().x + obstacle.getWidth() > 0);
-            this.obstacles.forEach((obstacle: Box) => {
-                if (obstacle.getPosition().x < 50) {
-                    obstacle.clear();
-                }
-                obstacle.update();
-            });
-
-            this.plain.update();
-            this.sky.update();
-            this.score++;
-        }
+      this.plain.update();
+      this.sky.update();
+      this.score++;
     }
+  }
 
-    public show() {
-        textSize(32);
-        fill(55);
-        text(Math.floor(this.score / 10), width - 100, 32);
-        this.sky.show();
-        this.plain.show();
-        this.obstacles.forEach((obstacle: Box) => {
-            obstacle.show();
-        });
-    }
+  public show() {
+    textSize(32);
+    fill(55);
+    text(Math.floor(this.score / 10), width - 100, 32);
+    this.sky.show();
+    this.plain.show();
+    this.obstacles.forEach((obstacle: Box) => {
+      obstacle.show();
+    });
+  }
 }

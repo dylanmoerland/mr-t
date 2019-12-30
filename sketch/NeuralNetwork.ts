@@ -1,74 +1,75 @@
 class NeuralNetwork {
-	private model: tf.Sequential;
-	private layers: NeuralNetworkLayer[];
+  private model: tf.Sequential;
 
-	constructor(model?: any, ...layers: NeuralNetworkLayer[]) {
-		this.layers = layers;
+  private layers: NeuralNetworkLayer[];
 
-		if (model) {
-			this.model = model;
-		} else {
-			this.model = NeuralNetwork.createModel(layers);
-		}
-	}
+  constructor(model?: any, ...layers: NeuralNetworkLayer[]) {
+    this.layers = layers;
 
-	public getLayers() {
-		return this.layers;
-	}
+    if (model) {
+      this.model = model;
+    } else {
+      this.model = NeuralNetwork.createModel(layers);
+    }
+  }
 
-	public predict(inputs: number[]) {
-		return tf.tidy(() =>{
-			const  prediction = this.model.predict(tf.tensor2d([inputs])) as tf.Tensor<tf.Rank>;
+  public getLayers() {
+    return this.layers;
+  }
 
-			return prediction.dataSync();
-		});
-	}
+  public predict(inputs: number[]) {
+    return tf.tidy(() => {
+      const prediction = this.model.predict(tf.tensor2d([inputs])) as tf.Tensor<tf.Rank>;
 
-	public dispose() {
-		this.model.dispose();
-	}
+      return prediction.dataSync();
+    });
+  }
 
-	private static get MUTATION_RATE() {
-		return 0.1;
-	}
+  public dispose() {
+    this.model.dispose();
+  }
 
-	public static createModel(layers: NeuralNetworkLayer[]): tf.Sequential {
-		const model = tf.sequential();
+  private static get MUTATION_RATE() {
+    return 0.1;
+  }
 
-		layers.forEach((layer: NeuralNetworkLayer) => {
-			model.add(layer.getDenseLayer());
-		});
+  public static createModel(layers: NeuralNetworkLayer[]): tf.Sequential {
+    const model = tf.sequential();
 
-		return model;
-	}
+    layers.forEach((layer: NeuralNetworkLayer) => {
+      model.add(layer.getDenseLayer());
+    });
 
-	public static FROM_PARENTS(a: NeuralNetwork, b: NeuralNetwork) {
-		const weightsA = a.model.getWeights();
-		const weightsB = a.model.getWeights();
+    return model;
+  }
 
-		const newWeights = weightsA.map((weight: tf.Tensor<tf.Rank>, weightIndex: number) => {
-			const valuesB = weightsB[weightIndex].dataSync();
+  public static FROM_PARENTS(a: NeuralNetwork, b: NeuralNetwork) {
+    const weightsA = a.model.getWeights();
+    const weightsB = a.model.getWeights();
 
-			const values = weight.dataSync().map((value: number, valueIndex: number) => {
-				if (random(1) < NeuralNetwork.MUTATION_RATE) {
-					return value + randomGaussian(0, 1);
-				}
-				
-				if (Math.random() >= 0.5) {
-					return valuesB[valueIndex];
-				}
+    const newWeights = weightsA.map((weight: tf.Tensor<tf.Rank>, weightIndex: number) => {
+      const valuesB = weightsB[weightIndex].dataSync();
 
-				return value;
-			});
-			
-			return tf.tensor(values, weight.shape);
-		});
+      const values = weight.dataSync().map((value: number, valueIndex: number) => {
+        if (random(1) < NeuralNetwork.MUTATION_RATE) {
+          return value + randomGaussian(0, 1);
+        }
 
-		const layers = a.getLayers();
-		const model = NeuralNetwork.createModel(layers);
+        if (Math.random() >= 0.5) {
+          return valuesB[valueIndex];
+        }
 
-		model.setWeights(newWeights);
+        return value;
+      });
 
-		return new NeuralNetwork(model, ...layers);
-	}
+      return tf.tensor(values, weight.shape);
+    });
+
+    const layers = a.getLayers();
+    const model = NeuralNetwork.createModel(layers);
+
+    model.setWeights(newWeights);
+
+    return new NeuralNetwork(model, ...layers);
+  }
 }
