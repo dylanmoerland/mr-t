@@ -1,9 +1,9 @@
 class NeuralNetwork {
-  private model: tf.Sequential;
+  private model: tf.Sequential | tf.LayersModel;
 
   private layers: NeuralNetworkLayer[];
 
-  constructor(model?: any, ...layers: NeuralNetworkLayer[]) {
+  constructor(model?: tf.Sequential | tf.LayersModel, ...layers: NeuralNetworkLayer[]) {
     this.layers = layers;
 
     if (model) {
@@ -45,7 +45,7 @@ class NeuralNetwork {
 
   public static FROM_PARENTS(a: NeuralNetwork, b: NeuralNetwork) {
     const weightsA = a.model.getWeights();
-    const weightsB = a.model.getWeights();
+    const weightsB = b.model.getWeights();
 
     const newWeights = weightsA.map((weight: tf.Tensor<tf.Rank>, weightIndex: number) => {
       const valuesB = weightsB[weightIndex].dataSync();

@@ -41,6 +41,7 @@ class Population {
   }
 
   public show() {
+    text(`GEN #${Math.floor(this.generation + 1)}`, 50, 32);
     this.agents.forEach((agent: Agent) => agent.show());
   }
 

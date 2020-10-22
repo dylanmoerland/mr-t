@@ -189,7 +189,7 @@ var NeuralNetwork = (function () {
     };
     NeuralNetwork.FROM_PARENTS = function (a, b) {
         var weightsA = a.model.getWeights();
-        var weightsB = a.model.getWeights();
+        var weightsB = b.model.getWeights();
         var newWeights = weightsA.map(function (weight, weightIndex) {
             var valuesB = weightsB[weightIndex].dataSync();
             var values = weight.dataSync().map(function (value, valueIndex) {
@@ -259,6 +259,7 @@ var Population = (function () {
         this.agents.forEach(function (agent) { return agent.dispose(); });
     };
     Population.prototype.show = function () {
+        text("GEN #" + Math.floor(this.generation + 1), 50, 32);
         this.agents.forEach(function (agent) { return agent.show(); });
     };
     Population.prototype.update = function () {
