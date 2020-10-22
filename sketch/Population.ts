@@ -15,9 +15,19 @@ class Population {
     return this.agents.some((agent: Agent) => agent.isAlive());
   }
 
+  private getNumberOfAliveAgents() {
+    return this.agents.reduce((accumulator, currentValue) => {
+      if (currentValue.isAlive()) {
+        return accumulator + 1;
+      }
+      return accumulator;
+    }, 0);
+  }
+
   private nextGeneration() {
     runner = new Runner(runner.getSpeed());
     const agents = [...this.agents];
+
     const bestAgents = agents.sort((a: Agent, b: Agent) => b.getScore() - a.getScore()).slice(0, 2);
 
     // Create new agents mutated from the best agents
@@ -41,7 +51,9 @@ class Population {
   }
 
   public show() {
-    text(`GEN #${Math.floor(this.generation + 1)}`, 50, 32);
+    textSize(12);
+    text(`Generation: ${this.generation + 1}`, 50, 12);
+    text(`Alive: ${this.getNumberOfAliveAgents()}`, 50, 28);
     this.agents.forEach((agent: Agent) => agent.show());
   }
 

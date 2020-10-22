@@ -241,6 +241,14 @@ var Population = (function () {
     Population.prototype.isAlive = function () {
         return this.agents.some(function (agent) { return agent.isAlive(); });
     };
+    Population.prototype.getNumberOfAliveAgents = function () {
+        return this.agents.reduce(function (accumulator, currentValue) {
+            if (currentValue.isAlive()) {
+                return accumulator + 1;
+            }
+            return accumulator;
+        }, 0);
+    };
     Population.prototype.nextGeneration = function () {
         runner = new Runner(runner.getSpeed());
         var agents = __spread(this.agents);
@@ -259,7 +267,9 @@ var Population = (function () {
         this.agents.forEach(function (agent) { return agent.dispose(); });
     };
     Population.prototype.show = function () {
-        text("GEN #" + Math.floor(this.generation + 1), 50, 32);
+        textSize(12);
+        text("Generation: " + (this.generation + 1), 50, 12);
+        text("Alive: " + this.getNumberOfAliveAgents(), 50, 28);
         this.agents.forEach(function (agent) { return agent.show(); });
     };
     Population.prototype.update = function () {
