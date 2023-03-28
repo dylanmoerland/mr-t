@@ -75,6 +75,9 @@ var Agent = (function () {
     Agent.FROM_PARENTS = function (a, b) {
         return new Agent(NeuralNetwork.FROM_PARENTS(a.brain, b.brain));
     };
+    Agent.CLONE = function (a) {
+        return new Agent(NeuralNetwork.CLONE(a.brain));
+    };
     return Agent;
 }());
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -208,6 +211,12 @@ var NeuralNetwork = (function () {
         model.setWeights(newWeights);
         return new (NeuralNetwork.bind.apply(NeuralNetwork, __spread([void 0, model], layers)))();
     };
+    NeuralNetwork.CLONE = function (a) {
+        var layers = a.getLayers();
+        var model = NeuralNetwork.createModel(layers);
+        model.setWeights(a.model.getWeights());
+        return new (NeuralNetwork.bind.apply(NeuralNetwork, __spread([void 0, model], layers)))();
+    };
     return NeuralNetwork;
 }());
 var __assign = (this && this.__assign) || function () {
@@ -253,9 +262,11 @@ var Population = (function () {
         runner = new Runner(runner.getSpeed());
         var agents = __spread(this.agents);
         var bestAgents = agents.sort(function (a, b) { return b.getScore() - a.getScore(); }).slice(0, 2);
-        this.agents = new Array(this.size)
+        this.agents = new Array(this.size - 2)
             .fill(0)
             .map(function () { return Agent.FROM_PARENTS(bestAgents[0], bestAgents[1]); });
+        this.agents.push(Agent.CLONE(bestAgents[0]));
+        this.agents.push(Agent.CLONE(bestAgents[1]));
         agents.forEach(function (agent) { return agent.dispose(); });
         this.generation++;
         runner.start();
@@ -325,7 +336,7 @@ function keyPressed() {
                 runner.start();
                 break;
             case 67:
-                target = new Population(8);
+                target = new Population(12);
                 runner.start();
                 break;
             case 76:
