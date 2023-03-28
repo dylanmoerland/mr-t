@@ -122,7 +122,7 @@ var MrT = (function () {
             var model;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4, tf.loadLayersModel('/mr-t.json')];
+                    case 0: return [4, tf.loadLayersModel('/mr-t/mr-t.json')];
                     case 1:
                         model = _a.sent();
                         this.agent = new Agent(new NeuralNetwork(model, new NeuralNetworkLayer(5, 'sigmoid', [5]), new NeuralNetworkLayer(3, 'sigmoid')));
