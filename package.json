@@ -4,6 +4,7 @@
   "description": "Mr. T, a self-thaught beast.",
   "scripts": {
     "start": "run-p start-compile start-run",
+    "build": "tsc --module none",
     "start-compile": "tsc --watch",
     "start-run": "browser-sync start --server -w"
   },
